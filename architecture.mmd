@@ -1,0 +1,16 @@
+flowchart TD
+    scene[3D scene render] --> color[TEXTURE_COLOR full res]
+    scene --> depth[TEXTURE_DEPTH full res]
+    color --> extract[extract_bloom shader]
+    extract --> bloom[TEXTURE_BLOOM full res]
+    bloom --> vol[volumetric_light shader<br/>16-tap depth raymarch<br/>early-out: no sun/moon, near geometry]
+    depth --> vol
+    vol --> volume[TEXTURE_VOLUME<br/>HALF RES this branch]
+    volume --> down[bloom_downsample x4 mip chain]
+    down --> up[bloom_upsample chain]
+    up --> scaleup[TEXTURE_SCALE_UP blurred bloom+godrays]
+    color --> fxaa[FXAA optional]
+    fxaa --> merge[second_stage merge]
+    scaleup --> merge
+    exposure[exposure textures] --> merge
+    merge --> screen([screen])
