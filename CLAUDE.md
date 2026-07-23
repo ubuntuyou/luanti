@@ -37,6 +37,26 @@ ninja -C build
 ./bin/luanti          # runs from source tree, picks up local shaders
 ```
 
+## Daily-driver .app (build-app/)
+
+/Applications/luanti.app IS this fork (old release archived at
+/Applications/luanti-5.16.1-release.app). Rebuild + reinstall:
+
+```
+ninja -C build-app install
+codesign --force --deep -s - build-app/install/luanti.app   # REQUIRED: install rpath fixup invalidates the ad-hoc signature -> SIGKILL on launch
+ditto build-app/install/luanti.app /Applications/luanti.app
+```
+
+Caveats: links against /opt/homebrew dylibs (this Mac only; a brew upgrade of
+SDL2/luajit/etc. can break it — rebuild if the app dies on launch). Bundle
+builds use ~/Library/Application Support/minetest for worlds/config, shared
+with the old release app. The bundle's shaders are COPIES — shader edits need
+a reinstall to reach the .app (unlike ./bin/luanti which reads the tree).
+
+Upstream PR: https://github.com/luanti-org/luanti/pull/17360 (draft, branch
+volumetric-light-perf = code changes only, pushed to fork ubuntuyou/luanti).
+
 **SDL2 gotcha:** without the two SDL2 flags, CMake links against a stale
 `~/Library/Frameworks/SDL2.framework` whose code signature macOS rejects at
 load (`dyld: library load disallowed by system policy`). Always point it at
