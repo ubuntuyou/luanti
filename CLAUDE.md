@@ -46,7 +46,29 @@ ninja -C build
 ninja -C build-app install
 codesign --force --deep -s - build-app/install/luanti.app   # REQUIRED: install rpath fixup invalidates the ad-hoc signature -> SIGKILL on launch
 ditto build-app/install/luanti.app /Applications/luanti.app
+ninja -C build luanti   # REQUIRED: build-app overwrites bin/luanti (shared output dir); restore the RUN_IN_PLACE dev binary
 ```
+
+**XQuartz Mesa gotcha (caused 2026-07-22 startup segfault):** FindOpenGL can
+resolve to XQuartz's `/usr/X11R6/lib/libGL.dylib` (Mesa) instead of Apple's
+OpenGL.framework. The Mesa dylib gets bundled, `glGetString` returns NULL
+(context belongs to Apple CGL, not Mesa) and Irrlicht segfaults in
+`initExtensions` (`atof(glGetString(GL_VERSION))`, COpenGLExtensionHandler.cpp:114).
+On any FRESH configure of build-app, pin it:
+
+```
+SDK=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework
+cmake -B build-app ... -DOPENGL_gl_LIBRARY=$SDK -DOPENGL_glu_LIBRARY=$SDK \
+      -DOPENGL_INCLUDE_DIR=$SDK -DOPENGL_GLU_INCLUDE_DIR=$SDK
+```
+
+Sanity check after install: `otool -L .../MacOS/luanti | grep -i gl` must show
+OpenGL.framework, and Contents/Frameworks must NOT contain libGL/libGLU.
+
+**Benign at every launch:** 5× "Could not create context: Failed creating
+OpenGL context at version requested" + "Could not create window and context!"
+— that's the opengl3 driver attempt (requests GL 3.2 COMPATIBILITY, which
+macOS never provides); Luanti then falls back to legacy `opengl`, which works.
 
 Caveats: links against /opt/homebrew dylibs (this Mac only; a brew upgrade of
 SDL2/luajit/etc. can break it — rebuild if the app dies on launch). Bundle
