@@ -31,10 +31,16 @@ client for A/B comparison: /Applications/luanti.app (5.16.1).
 ## Build
 
 ```
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_GETTEXT=ON
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_GETTEXT=ON \
+      -DSDL2_DIR=/opt/homebrew/lib/cmake/SDL2 -DCMAKE_FIND_FRAMEWORK=LAST
 ninja -C build
 ./bin/luanti          # runs from source tree, picks up local shaders
 ```
+
+**SDL2 gotcha:** without the two SDL2 flags, CMake links against a stale
+`~/Library/Frameworks/SDL2.framework` whose code signature macOS rejects at
+load (`dyld: library load disallowed by system policy`). Always point it at
+the Homebrew SDL2.
 
 Deps via brew: cmake ninja freetype gettext gmp jpeg-turbo jsoncpp leveldb(optional)
 libogg libpng libvorbis luajit sdl2 zstd.
