@@ -108,6 +108,12 @@ class GameGlobalShaderUniformSetter : public IShaderUniformSetter
 	CachedPixelShaderSetting<float> m_moon_brightness_pixel{"moonBrightness"};
 	CachedPixelShaderSetting<float>
 		m_volumetric_light_strength_pixel{"volumetricLightStrength"};
+	// TESTING ONLY, local branch knobs (volumetric-perf): sample count slider
+	// and early-exit toggle.
+	CachedPixelShaderSetting<float>
+		m_volumetric_light_samples_pixel{"volumetricLightSamples"};
+	CachedPixelShaderSetting<float>
+		m_volumetric_light_early_exit_pixel{"volumetricLightEarlyExit"};
 
 	static constexpr std::array<const char*, 1> SETTING_CALLBACKS = {
 		"exposure_compensation",
@@ -254,6 +260,12 @@ public:
 
 			float volumetric_light_strength = lighting.volumetric_light_strength;
 			m_volumetric_light_strength_pixel.set(&volumetric_light_strength, services);
+
+			float volumetric_light_samples = g_settings->getS32("volumetric_light_samples");
+			m_volumetric_light_samples_pixel.set(&volumetric_light_samples, services);
+
+			float volumetric_light_early_exit = g_settings->getBool("volumetric_light_early_exit") ? 1.f : 0.f;
+			m_volumetric_light_early_exit_pixel.set(&volumetric_light_early_exit, services);
 		}
 	}
 
@@ -1281,6 +1293,11 @@ void Game::updateProfilers(const RunStats &stats, const FpsControl &draw_times,
 	g_profiler->graphAdd("Sleep [us]", draw_times.sleep_time);
 
 	g_profiler->graphSet("FPS", 1.0f / dtime);
+
+	// TESTING ONLY (volumetric-perf): mirror FPS/drawtime into avg entries so
+	// they show up in the profiler_print_interval log dump for headless A/B.
+	g_profiler->avg("FPS (avg)", 1.0f / dtime);
+	g_profiler->avg("Draw scene avg [ms]", stats.drawtime / 1000.f);
 
 	auto stats2 = driver->getFrameStats();
 	g_profiler->avg("Irr: drawcalls", stats2.Drawcalls);

@@ -219,14 +219,18 @@ RenderStep *addPostProcessing(RenderPipeline *pipeline, RenderStep *previousStep
 			// Half resolution: the volumetric result only reaches the screen
 			// through the bloom downsample/upsample chain (first target is
 			// already half-res + bilinear), so full-res fragments are wasted.
-			buffer->setTexture(TEXTURE_VOLUME, scale * 0.5f, "volume", bloom_format);
+			// TESTING KNOB (local only, not for upstream): volumetric_light_half_res
+			bool half_res = g_settings->getBool("volumetric_light_half_res");
+			v2f volume_scale = half_res ? scale * 0.5f : scale;
+			buffer->setTexture(TEXTURE_VOLUME, volume_scale, "volume", bloom_format);
 
 			shader_id = client->getShaderSource()->getShaderRaw("volumetric_light");
 			auto volume = pipeline->addStep<PostProcessingStep>(shader_id, std::vector<u8> { source, TEXTURE_DEPTH });
 			volume->setRenderSource(buffer);
 			// color is minified into the half-res target; depth stays nearest
 			// because the shader does exact comparisons against 1.0
-			volume->setBilinearFilter(0, true);
+			if (half_res)
+				volume->setBilinearFilter(0, true);
 			volume->setRenderTarget(pipeline->createOwned<TextureBufferOutput>(buffer, TEXTURE_VOLUME));
 			source = TEXTURE_VOLUME;
 		}

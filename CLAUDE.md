@@ -28,6 +28,28 @@ client for A/B comparison: /Applications/luanti.app (5.16.1).
 3. Shader: skip raymarch when `pow(rawDepth,128) < 1e-4` (near geometry)
 4. Shader: 30 → 16 samples; reuse `rawDepth` instead of re-sampling depthmap
 
+## Testing knobs (LOCAL ONLY — strip from PR diff)
+
+`volumetric_light_half_res` (bool, true), `volumetric_light_samples` (int 16,
+1-64), and `volumetric_light_early_exit` (bool, true — off = always raymarch
+like upstream; covers BOTH shader early-outs) in Settings → Graphics → Effects.
+Wired through settingtypes.txt + defaultsettings.cpp + secondstage.cpp
+(half-res) + game.cpp/shader uniforms `volumetricLightSamples` /
+`volumetricLightEarlyExit` (live per-frame). Touched files to revert
+before upstreaming: builtin/settingtypes.txt, src/defaultsettings.cpp,
+src/client/render/secondstage.cpp, src/client/game.cpp, volumetric shader.
+
+- **settingtypes.txt display names cannot contain nested parens** — the Lua
+  parser (`builtin/common/settings/settingtypes.lua`, pattern `%(([^%)]*)%)`)
+  stops at the first `)` and silently drops the whole entry.
+- **Every new setting read by C++ needs a default in src/defaultsettings.cpp.**
+  settingtypes.txt only feeds the GUI; `g_settings->get*` on an unregistered
+  setting throws ("Setting [x] not found") the moment the code path runs.
+
+Measured A/B (MacBook Air, ~880x510 window, noon sun on-screen, perftest world):
+volumetric OFF 44ms | half-res+16 46-50ms | half-res+64 61-64ms | full-res+16 68ms.
+Half-res cuts worst-case volumetric cost ~24ms → ~4ms.
+
 ## Build
 
 ```
@@ -86,6 +108,34 @@ the Homebrew SDL2.
 
 Deps via brew: cmake ninja freetype gettext gmp jpeg-turbo jsoncpp leveldb(optional)
 libogg libpng libvorbis luajit sdl2 zstd.
+
+## Driving Luanti via computer-use MCP (remote testing)
+
+- `bin/luanti` has **no bundle ID**, so the MCP screenshot compositor can never
+  show it and clicks on it are blocked. Drive **/Applications/luanti.app**
+  (org.luanti.luanti) instead — reinstall via the build-app flow to test changes.
+- MCP `key` reaches SDL for most keys (F5, t, return) but **Escape doesn't**;
+  send it via `osascript -e 'tell application "System Events" to key code 53'`
+  (Ghostty has Accessibility). If that times out (-1712): `killall "System Events"`.
+- Mouse: `mouse_move` doesn't rotate the captured camera; `left_click_drag` does
+  (inverted: drag down = look up). Full-desktop view: `screencapture -x` from
+  Bash (Ghostty has Screen Recording) — unfiltered, may expose other windows.
+- **Synthetic input dies intermittently while Joe's RustDesk session is up**
+  (worked-then-stopped, both keys and drags; letters worse than F5). Also:
+  MCP `key` F5 can trigger macOS **dictation** (F5 = mic key on the Air) which
+  swallows keystrokes globally — kill `localspeechrecognition`/`corespeechd`;
+  a hidden **Problem Reporter** dialog steals keyboard focus too (invisible in
+  filtered screenshots — the screenshot warning line is the tell; `kill` it).
+  In-game clicks PUNCH blocks (creative = instant dig) — avoid stray clicks.
+- **Robust alternative to driving the camera with input: don't.** While Luanti
+  is quit, write the world's `players.sqlite`: `UPDATE player SET yaw,pitch,
+  posX/Y/Z` (pos is ×10; DB pitch sign is inverted vs HUD, DB + = down; yaw
+  matches HUD degrees, 270 = East +X). Or better: local mod
+  `~/Library/Application Support/minetest/mods/abtest` (enabled in perftest's
+  world.mt) pins pos/yaw/pitch on join and runs a scripted 12s pan — exact
+  reproducible camera for A/B stills + shimmer test. Time-of-day: set
+  `time_of_day` in the world's `env_meta.txt` (units: 1000/hr, 6800≈sunrise+),
+  freeze with `time_speed = 0` in minetest.conf. Chat/teleport not needed.
 
 ## Testing volumetric perf
 

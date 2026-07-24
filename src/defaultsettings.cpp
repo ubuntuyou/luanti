@@ -339,6 +339,10 @@ void set_default_settings()
 	settings->setDefault("enable_bloom", "false");
 	settings->setDefault("enable_bloom_debug", "false");
 	settings->setDefault("enable_volumetric_lighting", "false");
+	// TESTING ONLY, local branch knobs (volumetric-perf)
+	settings->setDefault("volumetric_light_half_res", "true");
+	settings->setDefault("volumetric_light_samples", "16");
+	settings->setDefault("volumetric_light_early_exit", "true");
 	settings->setDefault("enable_water_reflections", "false");
 	settings->setDefault("enable_translucent_foliage", "false");
 

@@ -10,6 +10,10 @@ uniform vec3 moonPositionScreen;
 uniform float moonBrightness;
 
 uniform lowp float volumetricLightStrength;
+// TESTING ONLY, local branch knobs (volumetric-perf): raymarch sample count,
+// and early-exit toggle (>0.5 = skip raymarch when it can't contribute).
+uniform lowp float volumetricLightSamples;
+uniform lowp float volumetricLightEarlyExit;
 
 uniform vec3 dayLight;
 #ifdef ENABLE_DYNAMIC_SHADOWS
@@ -36,11 +40,11 @@ float sampleVolumetricLight(vec2 uv, vec3 lightVec, float rawDepth)
 	// The exponent was chosen based on aesthetic preference.
 	float depthFactor = pow(rawDepth, 128.0);
 	// Anything that isn't sky-distance zeroes the result; skip the raymarch.
-	if (depthFactor < 1e-4)
+	if (volumetricLightEarlyExit > 0.5 && depthFactor < 1e-4)
 		return 0.;
 
 	lightVec = 0.5 * lightVec / lightVec.z + 0.5;
-	const float samples = 16.;
+	float samples = volumetricLightSamples;
 	float result = rawDepth < 1. ? 0.0 : 1.0;
 	float bias = noise(vec3(uv, rawDepth));
 	vec2 samplepos;
@@ -85,7 +89,8 @@ vec3 applyVolumetricLight(vec3 color, vec2 uv, float rawDepth)
 
 	// No visible light source (sun/moon below horizon or behind camera):
 	// lightFactor would be 0, so skip the raymarch entirely.
-	if (brightness > 0.) {
+	// With the early-exit knob off, always raymarch (upstream behavior).
+	if (brightness > 0. || volumetricLightEarlyExit < 0.5) {
 		float cameraDirectionFactor = pow(clamp(dot(sourcePosition, vec3(0., 0., 1.)), 0.0, 0.7), 2.5);
 		float viewAngleFactor = pow(max(0., dot(sourcePosition, lookDirection)), 8.);
 
