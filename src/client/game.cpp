@@ -259,6 +259,11 @@ public:
 			}
 
 			float volumetric_light_strength = lighting.volumetric_light_strength;
+			// TESTING ONLY (volumetric-perf): client-side strength override,
+			// -1 = use the server-provided value.
+			float strength_override = g_settings->getFloat("volumetric_light_strength_override");
+			if (strength_override >= 0.0f)
+				volumetric_light_strength = strength_override;
 			m_volumetric_light_strength_pixel.set(&volumetric_light_strength, services);
 
 			float volumetric_light_samples = g_settings->getS32("volumetric_light_samples");

@@ -860,6 +860,10 @@ volumetric_light_samples (Volumetric lighting samples TESTING) int 16 1 64
 #    raymarch, like upstream.
 volumetric_light_early_exit (Volumetric lighting early-exit TESTING) bool true
 
+#    TESTING ONLY, local branch knob (volumetric-perf): override the
+#    server-provided volumetric light strength. -1 = use server value.
+volumetric_light_strength_override (Volumetric strength override TESTING) float -1 -1 1
+
 [**Other Effects]
 
 #   Simulate translucency when looking at foliage in the sunlight.
