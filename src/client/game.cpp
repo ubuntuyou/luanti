@@ -207,11 +207,20 @@ public:
 		m_exposure_params_pixel.set(exposure_buffer.data(), services);
 
 		if (m_bloom_enabled) {
+			// TESTING ONLY (volumetric-perf): client-side overrides for the
+			// server-provided set_lighting bloom params, -1 = use server value.
+			float ov;
 			float intensity = std::max(lighting.bloom_intensity, 0.0f);
+			if ((ov = g_settings->getFloat("bloom_intensity_override")) >= 0.0f)
+				intensity = ov;
 			m_bloom_intensity_pixel.set(&intensity, services);
 			float strength_factor = std::max(lighting.bloom_strength_factor, 0.0f);
+			if ((ov = g_settings->getFloat("bloom_strength_override")) >= 0.0f)
+				strength_factor = ov;
 			m_bloom_strength_pixel.set(&strength_factor, services);
 			float radius = std::max(lighting.bloom_radius, 0.0f);
+			if ((ov = g_settings->getFloat("bloom_radius_override")) >= 0.0f)
+				radius = ov;
 			m_bloom_radius_pixel.set(&radius, services);
 		}
 

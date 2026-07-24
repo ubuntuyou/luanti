@@ -344,6 +344,9 @@ void set_default_settings()
 	settings->setDefault("volumetric_light_samples", "16");
 	settings->setDefault("volumetric_light_early_exit", "true");
 	settings->setDefault("volumetric_light_strength_override", "-1");
+	settings->setDefault("bloom_intensity_override", "-1");
+	settings->setDefault("bloom_strength_override", "-1");
+	settings->setDefault("bloom_radius_override", "-1");
 	settings->setDefault("enable_water_reflections", "false");
 	settings->setDefault("enable_translucent_foliage", "false");
 

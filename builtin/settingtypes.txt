@@ -864,6 +864,18 @@ volumetric_light_early_exit (Volumetric lighting early-exit TESTING) bool true
 #    server-provided volumetric light strength. -1 = use server value.
 volumetric_light_strength_override (Volumetric strength override TESTING) float -1 -1 1
 
+#    TESTING ONLY, local branch knob (volumetric-perf): override server-provided
+#    bloom intensity. -1 = use server value. Upstream default 0.05.
+bloom_intensity_override (Bloom intensity override TESTING) float -1 -1 1
+
+#    TESTING ONLY, local branch knob (volumetric-perf): override server-provided
+#    bloom strength factor. -1 = use server value. Upstream default 1.0.
+bloom_strength_override (Bloom strength factor override TESTING) float -1 -1 10
+
+#    TESTING ONLY, local branch knob (volumetric-perf): override server-provided
+#    bloom radius. -1 = use server value. Upstream default 1.0.
+bloom_radius_override (Bloom radius override TESTING) float -1 -1 8
+
 [**Other Effects]
 
 #   Simulate translucency when looking at foliage in the sunlight.
