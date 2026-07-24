@@ -108,10 +108,7 @@ class GameGlobalShaderUniformSetter : public IShaderUniformSetter
 	CachedPixelShaderSetting<float> m_moon_brightness_pixel{"moonBrightness"};
 	CachedPixelShaderSetting<float>
 		m_volumetric_light_strength_pixel{"volumetricLightStrength"};
-	// TESTING ONLY, local branch knobs (volumetric-perf): sample count slider
-	// and early-exit toggle.
-	CachedPixelShaderSetting<float>
-		m_volumetric_light_samples_pixel{"volumetricLightSamples"};
+	// TESTING ONLY, local branch knob (volumetric-perf): early-exit toggle.
 	CachedPixelShaderSetting<float>
 		m_volumetric_light_early_exit_pixel{"volumetricLightEarlyExit"};
 
@@ -274,9 +271,6 @@ public:
 			if (strength_override >= 0.0f)
 				volumetric_light_strength = strength_override;
 			m_volumetric_light_strength_pixel.set(&volumetric_light_strength, services);
-
-			float volumetric_light_samples = g_settings->getS32("volumetric_light_samples");
-			m_volumetric_light_samples_pixel.set(&volumetric_light_samples, services);
 
 			float volumetric_light_early_exit = g_settings->getBool("volumetric_light_early_exit") ? 1.f : 0.f;
 			m_volumetric_light_early_exit_pixel.set(&volumetric_light_early_exit, services);

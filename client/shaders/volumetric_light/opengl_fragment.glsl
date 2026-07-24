@@ -10,9 +10,8 @@ uniform vec3 moonPositionScreen;
 uniform float moonBrightness;
 
 uniform lowp float volumetricLightStrength;
-// TESTING ONLY, local branch knobs (volumetric-perf): raymarch sample count,
-// and early-exit toggle (>0.5 = skip raymarch when it can't contribute).
-uniform lowp float volumetricLightSamples;
+// TESTING ONLY, local branch knob (volumetric-perf): early-exit toggle
+// (>0.5 = skip raymarch when it can't contribute).
 uniform lowp float volumetricLightEarlyExit;
 
 uniform vec3 dayLight;
@@ -44,7 +43,7 @@ float sampleVolumetricLight(vec2 uv, vec3 lightVec, float rawDepth)
 		return 0.;
 
 	lightVec = 0.5 * lightVec / lightVec.z + 0.5;
-	float samples = volumetricLightSamples;
+	const float samples = 30.;
 	float result = rawDepth < 1. ? 0.0 : 1.0;
 	float bias = noise(vec3(uv, rawDepth));
 	vec2 samplepos;

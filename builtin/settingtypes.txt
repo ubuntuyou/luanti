@@ -851,10 +851,6 @@ enable_volumetric_lighting (Volumetric lighting) bool false
 #    lighting pass at half resolution instead of full resolution.
 volumetric_light_half_res (Volumetric lighting half-res TESTING) bool true
 
-#    TESTING ONLY, local branch knob (volumetric-perf): number of raymarch
-#    samples per pixel in the volumetric lighting pass.
-volumetric_light_samples (Volumetric lighting samples TESTING) int 16 1 64
-
 #    TESTING ONLY, local branch knob (volumetric-perf): skip the raymarch when
 #    the sun/moon is not visible or the pixel is near geometry. Off = always
 #    raymarch, like upstream.
